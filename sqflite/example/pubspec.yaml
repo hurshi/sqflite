@@ -10,10 +10,12 @@ dependencies:
   collection: any
   flutter:
     sdk: flutter
+  #  sqflite:
+  #    git:
+  #      url: git://github.com/tekartik/sqflite
+  #      path: sqflite
   sqflite:
-    git:
-      url: git://github.com/tekartik/sqflite
-      path: sqflite
+    path: ../
 
 
 dev_dependencies:

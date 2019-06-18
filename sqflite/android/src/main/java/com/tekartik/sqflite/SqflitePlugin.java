@@ -2,10 +2,6 @@ package com.tekartik.sqflite;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteCantOpenDatabaseException;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
@@ -17,6 +13,10 @@ import com.tekartik.sqflite.operation.ExecuteOperation;
 import com.tekartik.sqflite.operation.MethodCallOperation;
 import com.tekartik.sqflite.operation.Operation;
 import com.tekartik.sqflite.operation.SqlErrorInfo;
+import com.tencent.wcdb.Cursor;
+import com.tencent.wcdb.SQLException;
+import com.tencent.wcdb.database.SQLiteCantOpenDatabaseException;
+import com.tencent.wcdb.database.SQLiteDatabase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -820,55 +820,6 @@ public class SqflitePlugin implements MethodCallHandler {
         result.success(databasesPath);
     }
 
-    private static class Database {
-        final boolean singleInstance;
-        final String path;
-        final int id;
-        SQLiteDatabase sqliteDatabase;
-
-        private Database(Context context, String path, int id, boolean singleInstance) {
-            this.path = path;
-            this.singleInstance = singleInstance;
-            this.id = id;
-        }
-
-        private void open() {
-            sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                    SQLiteDatabase.CREATE_IF_NECESSARY);
-        }
-
-        private void openReadOnly() {
-            sqliteDatabase = SQLiteDatabase.openDatabase(path, null,
-                    SQLiteDatabase.OPEN_READONLY);
-        }
-
-        public void close() {
-            sqliteDatabase.close();
-        }
-
-        public SQLiteDatabase getWritableDatabase() {
-            return sqliteDatabase;
-        }
-
-        public SQLiteDatabase getReadableDatabase() {
-            return sqliteDatabase;
-        }
-
-        public boolean enableWriteAheadLogging() {
-            try {
-                return sqliteDatabase.enableWriteAheadLogging();
-            } catch (Exception e) {
-                Log.e(TAG, "enable WAL error: " + e);
-                return false;
-            }
-        }
-
-        String getThreadLogTag() {
-            Thread thread = Thread.currentThread();
-
-            return "" + id + "," + thread.getName() + "(" + thread.getId() + ")";
-        }
-    }
 
     private class BgResult implements Result {
         // Caller handler

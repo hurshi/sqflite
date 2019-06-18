@@ -29,6 +29,7 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -56,4 +57,18 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.12'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
+    implementation 'com.google.dagger:dagger:2.23.1'
+    implementation 'com.google.dagger:dagger-android:2.23.1'
+    implementation 'com.tencent.wcdb:wcdb-android:1.0.8'
+    implementation 'com.github.hurshi.SimplifyDagger:annotation:0.10'
+    implementation 'com.github.hurshi.SimplifyDagger:scopes:0.10'
+    implementation('com.github.hurshi:daggerobj:0.1') {
+        exclude group: 'androidx.appcompat', module: 'appcompat'
+    }
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.23.1'
+    annotationProcessor 'com.google.dagger:dagger-android-processor:2.23.1'
+    annotationProcessor 'com.github.hurshi.SimplifyDagger:processor:0.10'
+
+
 }
