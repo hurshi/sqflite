@@ -83,7 +83,7 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
     private var databaseMap: NSMutableDictionary?
     private var singleInstanceDatabaseMap: NSMutableDictionary?
     private var mapLock: NSObject?
-    private var wcdb: Database?
+    public var wcdb: Database?
     private var changes: Int?
     private var lastInsertedRowID: Int64?
     private var _queryAsMapList: Bool = false;
@@ -94,6 +94,7 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
     
     private var _lastDatabaseId: Int = 0;
     private var _databaseOpenCount: Int = 0;
+    public var databasePath = ""
     /*
      eg use in ViewController
      SqfliteZPlugin.register(with: self.registrar(forPlugin: "SqfliteZPlugin"))
@@ -289,14 +290,21 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
             return false
         }
 
-        print("_queryAsMapList 对应的是: \(_queryAsMapList)")
-        var array = NSMutableArray.init()
-        do {
-            array = try db.query(sql: sql!).allQueryObjects()
-            operation.success(with: array as NSObject)
-        } catch let error {
-            print("Sqflite: 取query 出错 ：：：\(error.localizedDescription)")
+        //print("_queryAsMapList 对应的是: \(_queryAsMapList)")
+        if (sql!.contains("delete") || sql!.contains("DELETE")) {
+            if !execute(on: db, with: operation) {
+                return false
+            }
+        } else {
+            var array = NSMutableArray.init()
+            do {
+                array = try db.query(sql: sql!).allQueryObjects()
+                operation.success(with: array as NSObject)
+            } catch let error {
+                print("Sqflite: 取query 出错 ：：：\(error.localizedDescription)")
+            }
         }
+
         if handleError(on: db, with: operation) {
             return false
         }
@@ -649,7 +657,11 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
     //
     private func handleGetDatabasesPath(on call: FlutterMethodCall, with result: FlutterResult) {
         let paths = NSSearchPathForDirectoriesInDomains(.userDirectory, .userDomainMask, true)
-        result(paths.first)
+        guard paths.count != 0 else {
+            result("path")
+            return
+        }
+        result(SqfliteZPlugin.instance.databasePath)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
