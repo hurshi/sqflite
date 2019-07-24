@@ -254,11 +254,33 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
     
     private func executeOrError(on db: Database, with operation: SqfliteZOperation) -> Bool {
         let sql = operation.getSql()
+        let sqlArguments = operation.getSqlArguments()
+        let argumentsEmpty = SqfliteZPlugin.arrayIsEmpy(with: sqlArguments as NSArray?)
         guard sql != nil else {
             return false
         }
         
-        doUpdateSql(sql: sql!, db: db)
+        if !argumentsEmpty {
+                    print("123")
+
+                    var a = [FundamentalValue?]()
+                    sqlArguments!.forEach { (source) in
+                        let object = source as AnyObject
+                        var dataSource: FundamentalValue?
+
+                        if object.isKind(of: NSData.classForCoder()) {
+                            dataSource = FundamentalValue.init(object as! Data)
+                        } else if object.isKind(of: NSString.classForCoder()) {
+                            dataSource = FundamentalValue.init(object as! String)
+                        } else if object.isKind(of: NSNumber.classForCoder()) {
+                            dataSource = FundamentalValue.init(object as! Int)
+                        }
+                        a.append(dataSource)
+                    }
+                    doUpdateSql(sql: sql!, db: db, sqlArguments: a)
+                } else {
+                   doUpdateSql(sql: sql!, db: db)
+                }
         
         if handleError(on: db, with: operation) {
             return false
@@ -267,11 +289,15 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
         return true
     }
     
-    private func doUpdateSql(sql: String, db: Database) {
+    private func doUpdateSql(sql: String, db: Database, sqlArguments: [FundamentalValue?]? = nil) {
         do {
             let updateSql = try db.prepareUpdateSQL(sql: sql)
             do {
-                try updateSql.execute()
+                if sqlArguments != nil {
+                    try updateSql.executeUpdate(with: sqlArguments!)
+                } else {
+                    try updateSql.execute()
+                }
                 lastInsertedRowID = updateSql.lastInsertedRowID
                 changes = updateSql.changes
             } catch {}
@@ -683,7 +709,7 @@ public class SqfliteZPlugin: NSObject,FlutterPlugin {
         } else if call.method == _methodQuery {
             handleQueryCall(on: call, with: wrappedResult)
         } else if call.method == _methodUpdate {
-            handleQueryCall(on: call, with: wrappedResult)
+            handleUpdateCall(on: call, with: wrappedResult)
         } else if call.method == _methodExecute {
             handleExecuteCall(on: call, with: wrappedResult)
         } else if call.method == _methodBatch {

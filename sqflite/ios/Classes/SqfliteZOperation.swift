@@ -181,9 +181,19 @@ class SqfliteMethodCallOperation: SqfliteZOperation {
         guard flutterMethodCall!.arguments != nil else {
             return nil
         }
-        let object = flutterMethodCall!.arguments! as? [Any]
+        let args = flutterMethodCall!.arguments! as? Dictionary<String,Any>
+        guard args != nil else {
+            return nil
+        }
+        let object = args![SqfliteParamSqlArguments]
 
-        return SqfliteZPlugin.toSqlArguments(with: object as NSArray?) as? [Any]
+        guard object != nil else {
+            return nil
+        }
+        guard !(object! as AnyObject).isKind(of: NSNull.classForCoder()) else {
+            return nil
+        }
+        return SqfliteZPlugin.toSqlArguments(with: object as! NSArray?) as? [Any]
     }
     
     override func success(with results: NSObject!) {
